@@ -6,9 +6,9 @@ se creo el repo de simulación, adquisición y visualización de datos.
 
 
 
-_'db_manipulation' va a tener las funciones que accesen a la base de datos, tanto para escribir como para leer.
+--'db_manipulation' va a tener las funciones que accesen a la base de datos, tanto para escribir como para leer.\r\n
 
--'dbs' es la carpeta donde se guardaran las bases de datos de los experimentos y archivos relacionados (uno que contenga cual fue el último experimetno cargado)
+--'dbs' es la carpeta donde se guardaran las bases de datos de los experimentos y archivos relacionados (uno que contenga cual fue el último experimetno cargado)
 
 -'out_csv' una carpeta para los csv de salida cuando se conviertan los datos desde la db a *.csv.
 
