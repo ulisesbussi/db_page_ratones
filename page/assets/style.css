@@ -1,0 +1,41 @@
+/* Ajustar el ancho de los elementos en función del tamaño del navegador */
+@media screen  and (min_width:768px){ /* Estilo para dispositivos pequeños (<= 768px) */
+    .row-exp.dur_dd {
+        width: 30%;
+        margin-right: 0px;
+    }
+    
+    .mb-3 {
+        width: 100%;
+        height: 10px;
+        margin-right: 250px;
+    
+        
+    }
+    
+    .row-exp {
+        width: 60%;
+        height: 100%;
+    
+    }
+
+
+}
+
+
+.running-exp {
+    height: 100%;
+    width: 80%;
+    border: 5px dashed rgb(102, 102, 102);
+    margin: 20px 20px 20px 20px;
+    border-radius: 20px;
+    display: flex; /* Activa el sistema de Flexbox */
+    justify-content: center; /* Centra horizontalmente el contenido */
+    align-items: center; 
+    
+}
+
+.running-div{ 
+    margin: 20px 20px 20px 20px;
+
+}

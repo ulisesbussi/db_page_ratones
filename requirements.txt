@@ -1,0 +1,6 @@
+dash==2.11.1
+numpy==1.25.0
+paho_mqtt==1.6.1
+pandas==1.5.3
+plotly==5.9.0
+Pympler==0.9
