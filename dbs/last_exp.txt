@@ -1,1 +1,1 @@
-{"db_name": "exp.db", "time_seg": 18135}
+{"db_name": "..\\dbs\\datos_sensores.db", "time_seg": 1130589}

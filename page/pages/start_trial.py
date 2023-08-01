@@ -20,7 +20,7 @@ last_exp_data= page_utils.read_exp_file()
 
 
 
-def check_if_running_exp(last_exp_data):
+def check_if_running_exp(last_exp_data : dict):
     if last_exp_data == {}:
         return "No hay experimento corriendo"
     name = last_exp_data.get('db_name')
@@ -29,7 +29,7 @@ def check_if_running_exp(last_exp_data):
 
 
 
-def get_selector(id,r, lab=None):
+def get_selector(id:str ,r: int, lab: str|None = None):
     lab = id if lab is None else lab
     options = [{'value': i, 'label': f"{i} {lab}"} for i in range(r)]
 
@@ -90,7 +90,7 @@ layout = html.Div([
           [Input({'type': 'dur_dd', 'id':ALL}, 'value')],
           Input('exp-name', 'value'),
         )
-def update_output(values, name):
+def update_output(values: list, name:str):
     time_text =""
     
     for v,s in zip(values,['dias','horas','minutos','segundos']):
@@ -112,12 +112,11 @@ def update_output(values, name):
           State({'type': 'dur_dd', 'id':ALL}, 'value'),
 
           )
-def run_experiment(click, name, values):
-    last_exp_data = page_utils.read_exp_file()
+def run_experiment(click : int, name :str , values : list):
     if click == 0:
         return ["", check_if_running_exp(last_exp_data)]
     
-    name = name+ '.db' if name != '' else 'exp.db'
+    name = '..\\dbs\\' + name+ '.db' if name != '' else '..\\dbs\\exp.db'
         
     vv = [int(v) for v in values]
     ts =  vv[-1] + 60*(vv[-2] +\
@@ -125,7 +124,6 @@ def run_experiment(click, name, values):
     last_exp_data = {'db_name': name, 
                      'time_seg': ts,
                      }
-    
     
     page_utils.write_exp_file(last_exp_data)
     print("Falta correr 'read_and_save.py'...")

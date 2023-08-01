@@ -5,7 +5,8 @@ from dash_bootstrap_templates import load_figure_template
 
 app = Dash(__name__,
            use_pages=True, 
-           external_stylesheets=[dbc.themes.SLATE],
+           external_stylesheets=[dbc.themes.SLATE, '/assets/style.css'],
+           
            #suppress_callback_exceptions=True)
         )
 from layout import get_layout #esto tiene que ir si o si después de definir

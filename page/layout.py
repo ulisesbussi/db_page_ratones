@@ -9,9 +9,11 @@ from pages import current_exp
 #como pestañas las posibles páginas? 
 children_pages=[
     *[
-    dbc.NavItem(dbc.NavLink(page["name"], href=page["path"]))
-        for page in dash.page_registry.values() 
-            if page["module"] != "pages.not_found_404" 
+    dbc.NavItem(dbc.NavLink(page["name"], 
+        href=page["path"]), 
+        className="nav-item",)
+            for page in dash.page_registry.values() 
+                if page["module"] != "pages.not_found_404" 
     ],   
 ]
 
@@ -35,6 +37,7 @@ def get_navbar():
             children = children_pages,#children_fixed,
             brand='NombreApp',
             brand_href='#', #link a algo?
+            className="navbar",
             #esto es estilo debería ir en el css
             color='secondary',
             dark=True,
