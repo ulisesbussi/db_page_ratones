@@ -33,7 +33,7 @@ topics = ["sensor/datos_" + str(i) for i in range(10)]
 #json . .
 def convert_to_double_quotes(json_str):
     try:
-        json_str_double_quotes = json.loads(json_str)
+        json_str_double_quotes = json.loads(json_str.replace("'", "\""))
         return json_str_double_quotes
     except Exception as e:
         print("Error al convertir a comillas dobles:", e)
