@@ -1,4 +1,4 @@
-db_temp.d#---------------------------------
+#---------------------------------
 #imports generales
 import sqlite3
 import json
