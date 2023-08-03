@@ -53,5 +53,5 @@ def leer_datos_desde_tabla():
         conn.close()
 
 if __name__ == "__main__":
-    check_db_size()
     leer_datos_desde_tabla()
+    check_db_size()
