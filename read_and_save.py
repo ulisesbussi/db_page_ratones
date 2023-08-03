@@ -16,7 +16,7 @@ from db_manipulation.utils import write_meas_to_db, guardar_estado_programa
 
 #---------------------------------
 #definición variables broker y topicos
-broker_address = "192.168.0.9"  
+broker_address = "192.168.4.1"  
 broker_port = 1883
 # creo 10 topicos, uno por sensor (sensor/datos_0 a sensor/datos_9)
 topics = ["sensor/datos_" + str(i) for i in range(10)]
