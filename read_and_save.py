@@ -1,4 +1,4 @@
-#---------------------------------
+db_temp.d#---------------------------------
 #imports generales
 import sqlite3
 import json
@@ -71,7 +71,7 @@ def on_message(database_file, client, userdata, message):
 #------------- Parse de argumentos----------------
 def parse():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--database", type=str, default="db_temp.db",
+    parser.add_argument("-d", "--database", type=str, default="datos_sensores.db",
                         help="Nombre de la base de datos")
     parser.add_argument("-t", "--timeduration", type=str, default="3m",
                         help="""Duracion de la medicion, especificando unidaded,
