@@ -1,4 +1,5 @@
 #import dash
+import subprocess
 from dash import (
                 Dash, dcc, html, Input, 
                 Output, State ,callback, ALL,
@@ -126,7 +127,10 @@ def run_experiment(click : int, name :str , values : list):
                      }
     
     page_utils.write_exp_file(last_exp_data)
-    print("Falta correr 'read_and_save.py'...")
+    read_and_save_path = "C:\\Users\\Lucas\\Documents\\Lucas\\Ratones\\db_page_ratones-main\\read_and_save.py" #agregar el archivo necesario
+    subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
+
+    #print("Falta correr 'read_and_save.py'...")
     return [f"Experimento corriendo {last_exp_data['db_name']}",
             check_if_running_exp(last_exp_data)]
     
