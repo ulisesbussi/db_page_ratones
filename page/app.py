@@ -1,7 +1,5 @@
-from dash import Dash, html
+from dash import Dash
 import dash_bootstrap_components as dbc
-from dash_bootstrap_templates import load_figure_template
-
 
 app = Dash(__name__,
            use_pages=True, 
@@ -11,9 +9,6 @@ app = Dash(__name__,
         )
 from layout import get_layout #esto tiene que ir si o si después de definir
 #la app
-
-
-
 
 app.layout = get_layout()
 
