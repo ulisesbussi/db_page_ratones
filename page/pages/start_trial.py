@@ -1,8 +1,7 @@
-#import dash
 import subprocess
 from dash import (
-                Dash, dcc, html, Input, 
-                Output, State , ctx, callback, ALL,
+                dcc, html, Input, 
+                Output, State, ctx, callback, ALL,
                 register_page,
     )
 import dash_bootstrap_components as dbc
@@ -21,12 +20,13 @@ last_exp_data= page_utils.read_exp_file()
 
 
 
-def check_if_running_exp(last_exp_data : dict):
-    if last_exp_data == {}:
-        return "No hay experimento corriendo"
-    name = last_exp_data.get('db_name')
-    dur = last_exp_data.get('time_seg')
-    return f"Corriendo el experimento {name} con duración: {dur} segs"
+def check_if_running_exp(last_exp_data : dict, poll : int):
+    if poll == None:
+        name = last_exp_data.get('db_name')
+        dur = last_exp_data.get('time_seg')
+        return f"Corriendo el experimento {name} con duración: {dur} segs"
+    return f"Experimento {last_exp_data['db_name']} finalizado"
+   
 
 
 
@@ -49,11 +49,11 @@ layout = html.Div([
     ),
     html.H1("Comienzo experimento"),
      dcc.Interval(id = "interval-component",
-         interval    = 15*1000,
+         interval    = 10*1000,
          n_intervals = 0,
-    ),              
-    html.Div([
-        html.H2(check_if_running_exp(last_exp_data),
+     ),    
+     html.Div([
+        html.H2(check_if_running_exp(last_exp_data,77),
                 className="running-div",
                 id="running-div")
         ],
@@ -133,10 +133,9 @@ def run_experiment(click: int, inter:int , name: str, values: list):
         read_and_save_path = "C:\\Users\\Lucas\\Documents\\Lucas\\Ratones\\db_page_ratones-main\\read_and_save.py" #print(name)
         #subpro=subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
         subpro=subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
-        #print("Se está ejecutando 'read_and_save.py' en segundo plano...")
-        #subpro.poll()
+        
         return [f"Experimento corriendo {last_exp_data['db_name']}",
-            check_if_running_exp(last_exp_data)]
+            check_if_running_exp(last_exp_data,subpro.poll())]
     elif trigger_id =="interval-component": 
         try:
             poll = subpro.poll()
@@ -144,9 +143,9 @@ def run_experiment(click: int, inter:int , name: str, values: list):
             poll = 578 #checkear valor
             
         if poll == None:
-            return ["", check_if_running_exp(last_exp_data)]
+            return ["", check_if_running_exp(last_exp_data,poll)]
         elif poll == 578:
-            return ["No hay experimento corriendo aún",""]
+            return ["",f"Experimento {last_exp_data['db_name']} finalizado"]
         else: return [f"Experimento {last_exp_data['db_name']} finalizado",""]
     
     
