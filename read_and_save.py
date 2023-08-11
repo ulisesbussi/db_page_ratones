@@ -1,6 +1,5 @@
 #---------------------------------
 #imports generales
-import sqlite3
 import json
 import time
 import paho.mqtt.client as mqtt
@@ -19,7 +18,7 @@ from db_manipulation.utils import write_meas_to_db, guardar_estado_programa
 broker_address = "192.168.4.1"  
 broker_port = 1883
 # creo 10 topicos, uno por sensor (sensor/datos_0 a sensor/datos_9)
-topics = ["sensor/datos_" + str(i) for i in range(10)]
+topics = ["sensor/datos_" + str(i) for i in range(2)]#(10)
 #---------------------------------
 
 
@@ -58,7 +57,7 @@ def on_message(database_file, client, userdata, message):
         #decode lo convierte a un string de bites y de ahí con la función
         #de arriba lo reformateo y saco el valor de la medición.
         payload = convert_to_double_quotes(message.payload.decode())  # Convertir a comillas dobles
-        medicion = payload.get("medicion")
+        medicion = payload.get('v')
 
         #print(f"guardando dato: {medicion} en {topic} en db: {database_file}")
         if medicion is not None: #si tengo medicion
@@ -93,7 +92,7 @@ mqtt_exit_event       = threading.Event()
 def programar_actualizacion_tabla_estado(database_file, 
                                          time_duration, 
                                          t0):
-    while not update_progress_event.wait(2):#60):  # Espera hasta que el evento esté activo o transcurra 1 minuto (60 segundos)
+    while not update_progress_event.wait(10):#60):  # Espera hasta que el evento esté activo o transcurra 1 minuto (60 segundos)
         guardar_estado_programa(database_file, 
                                 time_duration, 
                                 time.time()-t0)
@@ -116,8 +115,8 @@ def mqtt_exit_thread(time_duration):
 def main():
     database_file, time_duration = parse()
 
-    print("conectando al broker")
-    client = mqtt.Client()
+    print("Conectando al broker.")
+    client = mqtt.Client(client_id = "Raspberry")
     client.connect(broker_address, broker_port)
 
     on_msg = lambda x,y,z: on_message(database_file, x,y,z)
