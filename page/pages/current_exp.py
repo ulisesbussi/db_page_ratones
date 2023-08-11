@@ -6,7 +6,9 @@ from dash import (
 import dash_bootstrap_components as dbc
 import pandas as pd
 from plotly import graph_objs as go
+import time
 from dash_bootstrap_templates import load_figure_template
+import sqlite3
 
 load_figure_template("cyborg")
 
@@ -38,7 +40,7 @@ def trace_from_df(df_dict : dict, i : int):
     return trace
 
 def create_fig():
-    fig = go.Figure(data=[{"x": [], "y": []} for i in range(10)])
+    fig = go.Figure(data=[{"x": [], "y": []} for i in range(2)])
     fig["layout"] = {"title" : "Datos de Sensores",
         "xaxis_title" : "Tiempo", 
         "yaxis_title" : "Valor"
@@ -51,15 +53,17 @@ intervalo_actualiazcion = 50 * 1000  # 50 segundos en milisegundos
 
 
 
+
 layout = html.Div([
     dcc.Interval(id = "interval-component",
         interval    = intervalo_actualiazcion,
         n_intervals = 0,
     ),
     html.Div([
-        dbc.Progress(label="25%", value=25,className="progress-bar",
-                     animated= True, color="success",
-                     ), #aca mostrar progreso
+    dbc.Progress(label="0%", value=0,className="progress-bar",
+                     id = "barra_progreso" ,
+                      animated= True, color="success",
+                      ), #aca mostrar progreso
         ],
         className = "running-exp"
     ),
@@ -94,6 +98,8 @@ para actualizar los elementos que ya existen.
 """
 
 
+def calcular_porcentaje(tiempo_deseado : float, tiempo_actual : float):
+    return int((tiempo_actual / tiempo_deseado) * 100)
 
 
 def actualizar_grafico():
@@ -102,11 +108,11 @@ def actualizar_grafico():
     if last_exp_data.get("db_name") is None:
         return patched_fig
     
-    for i in range(10):
+    for i in range(2):
         table_name = f"datos_{i}"
         data = dbu.obtener_datos_desde_tabla(last_exp_data.get("db_name"),
-                                             table_name,
-                                             step = 300)
+                                              table_name,
+                                              step = 1)
         this_trace = trace_from_df(data,i)
     
         #si la tabla no está vacía agrego los datos    
@@ -114,23 +120,53 @@ def actualizar_grafico():
             patched_fig["data"][i]["x"] = this_trace["x"]
             patched_fig["data"][i]["y"] = this_trace["y"]
                
-    return  patched_fig
+            return  patched_fig
 
 
 
 
 @callback(Output("sensor-graph", "figure"),
               [Input("interval-component", "n_intervals"),
-               Input("boton-actualizar", "n_clicks")]
+                Input("boton-actualizar", "n_clicks")],
+              # prevent_initial_call = True
     )
 def refresh(n_intervals, 
-                       n_clicks, 
-                       ):
+                        n_clicks, 
+                        ):
+    global last_exp_data
     "esta funcion refresca la página"
-
+    last_exp_data = page_utils.read_exp_file()
     patched_fig = actualizar_grafico()
     return  patched_fig
 
+
+
+# Actualiza el porcentaje de la barra de progreso
+@callback(
+    Output("barra_progreso", "value"),
+    Output("barra_progreso", "label"),
+    Input("interval-component", "n_intervals"),
+    Input("boton-actualizar", "n_clicks"),
+)
+
+def actualizar_progreso(n_intervals, n_clicks):
+    # Conecta a la base de datos
+    conn = sqlite3.connect(last_exp_data.get("db_name"))  # Cambia "nombre_de_tu_base_de_datos.db" al nombre de tu base de datos
+
+# Crea un cursor
+    cursor = conn.cursor()
+
+# Ejecuta la consulta SQL para obtener el tiempo actual y tiempo total
+    cursor.execute("SELECT tiempo_deseado, tiempo_actual FROM estado_programa")
+
+# Obtén el resultado de la consulta
+    result = cursor.fetchone()
+
+# Cierra la conexión a la base de datos
+    conn.close()
+    tiempo_deseado, tiempo_actual = result
+    porcentaje = calcular_porcentaje(tiempo_deseado, tiempo_actual)
+    return [porcentaje,f"{porcentaje}%"]
 
 
 
