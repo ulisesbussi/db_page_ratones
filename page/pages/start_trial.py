@@ -146,7 +146,7 @@ def run_experiment(click: int, inter:int , name: str, values: list):
             return ["", check_if_running_exp(last_exp_data,poll)]
         elif poll == 578:
             return ["",f"Experimento {last_exp_data['db_name']} finalizado"]
-        else: return [f"Experimento {last_exp_data['db_name']} finalizado",""]
+        else: return ["",f"Experimento {last_exp_data['db_name']} finalizado"]
     
     
     #run_experiment_thread(name, ts)
