@@ -28,7 +28,7 @@ def obtener_datos_desde_bd(name :str ):
 carpeta_archivos = "\\Users\\alefermatulu\\Documents\\Lucas\\db_page_ratones-main\\dbs"
 
 # Obtener la lista de archivos en la carpeta
-archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
+#archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
 
 #opcion_inicial = archivos_en_carpeta[0] if archivos_en_carpeta else "No hay bases de datos"
 
@@ -40,14 +40,17 @@ como una página.
 """
 layout = dbc.Container([
     html.H1("Conversor de Archivos", className="mt-4"),
+    dcc.Interval(
+        id='interval-component',
+        interval=30 * 1000,  # Actualizar cada 60 segundos
+        n_intervals=0
+    ),
     dbc.Row([
         dbc.Col(
             dcc.Dropdown(
                 id='dropdown-archivos',
-                options=[{'label': archivo, 'value': archivo} for archivo in archivos_en_carpeta],
-                #value=opcion_inicial,
-                clearable=False , 
-                # Evita que el usuario pueda borrar la opción predeterminada
+                options=[],
+                clearable=False,
                 placeholder="Seleccione un archivo"
             ),
             width=6
@@ -91,3 +94,12 @@ def convertir_archivo(n_clicks, archivo_seleccionado):
             pd.DataFrame(d).to_csv(csv_filename,index=False)
         mensaje = f"Archivo '{archivo_seleccionado}' convertido exitosamente."
         return mensaje
+
+@callback(
+    Output('dropdown-archivos', 'options'),
+    Input('interval-component', 'n_intervals')
+)
+def update_dropdown_options(n):
+    archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
+    dropdown_options = [{'label': archivo, 'value': archivo} for archivo in archivos_en_carpeta]
+    return dropdown_options
