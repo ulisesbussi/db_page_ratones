@@ -117,8 +117,7 @@ def actualizar_grafico():
     
         #si la tabla no está vacía agrego los datos    
         if this_trace is not None:
-            patched_fig["data"][i]["x"] = this_trace["x"]
-            patched_fig["data"][i]["y"] = this_trace["y"]  
+            patched_fig["data"][i] = this_trace 
     return  patched_fig
 
 
