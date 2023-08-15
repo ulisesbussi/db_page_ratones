@@ -1,12 +1,13 @@
 from dash import (
-                Dash, dcc, html, Input, 
-                Output, State ,callback, ALL,
+                dcc, html, Input, 
+                Output, State ,callback,
                 register_page,
     )
 import pandas as pd
 import dash_bootstrap_components as dbc
 import os
 import sqlite3
+import datetime
 #---------------------------register--------------------------------
 register_page(__name__, path="/to_csv",name='Exportar a csv')
 #-------------------------------------------------------------------
@@ -15,12 +16,17 @@ register_page(__name__, path="/to_csv",name='Exportar a csv')
 import page_utils
 last_exp_data= page_utils.read_exp_file()
 
+def convert_timestamp(ts):
+    return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S.%f')
+
 def obtener_datos_desde_bd(name :str ):
     """Leo los datos de la base de datos y devuelvo dict de dataFrames"""
     conn = sqlite3.connect(name)
     dfs = {}
     for i in range(2):
         df = pd.read_sql_query(f"SELECT * FROM datos_{i}", conn)  # Tablas para los canales sensor/datos_0 a sensor/datos_9
+        df['tiempo'] = df['tiempo'].apply(convert_timestamp)
+        #df['tiempo'] = datetime.datetime.fromtimestamp(df['tiempo']).strftime('%Y-%m-%d %H:%M:%S.%f')
         dfs[f"datos_{i}"] = df.to_dict()
     conn.close()
     return dfs
