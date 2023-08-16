@@ -1,12 +1,12 @@
 from dash import (
                 dcc, html, Input, 
                 Output, callback,
-                register_page, Patch,
+                register_page, Patch, no_update,
     )
 import dash_bootstrap_components as dbc
 import pandas as pd
 from plotly import graph_objs as go
-import time
+#import time
 from dash_bootstrap_templates import load_figure_template
 import sqlite3
 
@@ -22,7 +22,7 @@ register_page(__name__, path="/running",name = "Experimento actual")
 
 import page_utils
 
-last_exp_data= page_utils.read_exp_file()
+#last_exp_data= page_utils.read_exp_file()
 
 #------------------------Funciones de figuras------------------------------
 #esto quizá vaya a utils después
@@ -91,7 +91,7 @@ layout = html.Div([
 # y hacer que un mismo callback llame a varias funciones sin volvernos locos.
 
 
-""" El objeto patch eprmite modificar una parte de un objeto
+""" El objeto patch permite modificar una parte de un objeto
 existente sin tener que redefinirlo constantemente. vamos a usar esto
 para actualizar los elementos que ya existen.
 
@@ -117,26 +117,26 @@ def actualizar_grafico():
     
         #si la tabla no está vacía agrego los datos    
         if this_trace is not None:
-            patched_fig["data"][i] = this_trace 
+            patched_fig["data"][i] = this_trace
     return  patched_fig
-
-
 
 
 @callback(Output("sensor-graph", "figure"),
               [Input("interval-component", "n_intervals"),
                 Input("boton-actualizar", "n_clicks")],
-              # prevent_initial_call = True
+               prevent_initial_call = True
     )
 def refresh(n_intervals, 
                         n_clicks, 
                         ):
+    
     global last_exp_data
     "esta funcion refresca la página"
     last_exp_data = page_utils.read_exp_file()
-    patched_fig = actualizar_grafico()
-    return  patched_fig
-
+    if last_exp_data.get("Running") == None:
+        patched_fig = actualizar_grafico()
+        return  patched_fig
+    return no_update
 
 
 # Actualiza el porcentaje de la barra de progreso
@@ -145,27 +145,31 @@ def refresh(n_intervals,
     Output("barra_progreso", "label"),
     Input("interval-component", "n_intervals"),
     Input("boton-actualizar", "n_clicks"),
+    prevent_initial_call = True
 )
 
 def actualizar_progreso(n_intervals, n_clicks):
-    # Conecta a la base de datos
-    conn = sqlite3.connect(last_exp_data.get("db_name"))  # Cambia "nombre_de_tu_base_de_datos.db" al nombre de tu base de datos
-
-# Crea un cursor
-    cursor = conn.cursor()
-
-# Ejecuta la consulta SQL para obtener el tiempo actual y tiempo total
-    cursor.execute("SELECT tiempo_deseado, tiempo_actual FROM estado_programa")
-
-# Obtén el resultado de la consulta
-    result = cursor.fetchone()
-
-# Cierra la conexión a la base de datos
-    conn.close()
-    tiempo_deseado, tiempo_actual = result
-    porcentaje = calcular_porcentaje(tiempo_deseado, tiempo_actual)
-    return [porcentaje,f"{porcentaje}%"]
-
+    global last_exp_data
+    last_exp_data= page_utils.read_exp_file()
+    if last_exp_data.get("Running") == None:
+        # Conecta a la base de datos
+        conn = sqlite3.connect(last_exp_data.get("db_name"))  # Cambia "nombre_de_tu_base_de_datos.db" al nombre de tu base de datos
+    
+    # Crea un cursor
+        cursor = conn.cursor()
+    
+    # Ejecuta la consulta SQL para obtener el tiempo actual y tiempo total
+        cursor.execute("SELECT tiempo_deseado, tiempo_actual FROM estado_programa")
+    
+    # Obtén el resultado de la consulta
+        result = cursor.fetchone()
+    
+    # Cierra la conexión a la base de datos
+        conn.close()
+        tiempo_deseado, tiempo_actual = result
+        porcentaje = calcular_porcentaje(tiempo_deseado, tiempo_actual)
+        return [porcentaje,f"{porcentaje}%"]
+    return [0,"0%"]
 
 
 
