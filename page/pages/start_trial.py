@@ -133,20 +133,23 @@ def run_experiment(click: int, inter:int , name: str, values: list):
         read_and_save_path = "C:\\Users\\Lucas\\Documents\\Lucas\\Ratones\\db_page_ratones-main\\read_and_save.py" #print(name)
         #subpro=subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
         subpro=subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
-        
+        poll = subpro.poll()
+        last_exp_data["Running"] = poll
+        page_utils.write_exp_file(last_exp_data)  
         return [f"Experimento corriendo {last_exp_data['db_name']}",
-            check_if_running_exp(last_exp_data,subpro.poll())]
+            check_if_running_exp(last_exp_data,poll)]
     elif trigger_id =="interval-component": 
         try:
             poll = subpro.poll()
         except:
             poll = 578 #checkear valor
-            
+        last_exp_data["Running"] = poll
+        page_utils.write_exp_file(last_exp_data)    
+
         if poll == None:
             return ["", check_if_running_exp(last_exp_data,poll)]
-        elif poll == 578:
+        else: 
             return ["",f"Experimento {last_exp_data['db_name']} finalizado"]
-        else: return ["",f"Experimento {last_exp_data['db_name']} finalizado"]
     
     
     #run_experiment_thread(name, ts)
