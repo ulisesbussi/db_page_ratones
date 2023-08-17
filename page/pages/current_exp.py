@@ -6,7 +6,6 @@ from dash import (
 import dash_bootstrap_components as dbc
 import pandas as pd
 from plotly import graph_objs as go
-#import time
 from dash_bootstrap_templates import load_figure_template
 import sqlite3
 
