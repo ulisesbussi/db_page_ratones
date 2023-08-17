@@ -1,23 +1,21 @@
 from dash import (
-                Dash, dcc, html, Input, 
-                Output, State ,callback, ALL,
-                register_page,Patch,no_update,
+                dcc, html, Input, 
+                Output,callback,
+                register_page,
     )
-import dash_bootstrap_components as dbc
 import os
+import sqlite3
+import page_utils
+import pandas as pd
 from plotly import graph_objs as go
-# import no_update
 from db_manipulation import utils as dbu
 #----------------------------register--------------------------
 register_page(__name__, path="/load_old",name="Experimentos anteriores")
 #--------------------------------------------------------------
-import sqlite3
-import page_utils
-import pandas as pd
 last_exp_data= page_utils.read_exp_file()
 
 
-carpeta_archivos = 'C:\\Users\\Pc\\Downloads\\db_page_ratones-main\\dbs'
+carpeta_archivos = "\\Users\\Lucas\\Documents\\Lucas\\Ratones\\db_page_ratones-main\\dbs"
 
 def obtener_datos_desde_bd(name :str ):
     """Leo los datos de la base de datos y devuelvo dict de dataFrames"""
@@ -81,7 +79,6 @@ def update_dropdown_options(n):
               Input("db-dropdown", "value"),
               )
 def load_graph(value):
-    archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
     if value is None:
         return create_fig()
     value=value.replace(".db","")
@@ -90,7 +87,6 @@ def load_graph(value):
     for i in range(2):
        table_name = f"datos_{i}"
        data = dbu.obtener_datos_desde_tabla(os.path.join(carpeta_archivos, f"{value}.db"), table_name, step=1)
-       n = value + f"_datos_{i}"
        this_trace = trace_from_df(data, i)
         
         # Si la tabla no está vacía, agrego los datos
@@ -98,8 +94,8 @@ def load_graph(value):
             patched_fig.add_trace(this_trace)
 
     return  patched_fig
-#  hemos creado un dropdown (dbdropdown) que permite
-#  a los usuarios seleccionar un archivo de base de datos.
-#  Cuando un archivo se selecciona en el dropdown, el callback load_graph
-#  se activa y se encarga de conectarse a la base de datos, obtener los 
-#  datos y crear un gráfico correspondiente.
+"""  hemos creado un dropdown (dbdropdown) que permite
+  a los usuarios seleccionar un archivo de base de datos.
+  Cuando un archivo se selecciona en el dropdown, el callback load_graph
+  se activa y se encarga de conectarse a la base de datos, obtener los 
+  datos y crear un gráfico correspondiente."""
