@@ -18,7 +18,7 @@ from db_manipulation.utils import write_meas_to_db, guardar_estado_programa
 broker_address = "192.168.4.1"  
 broker_port = 1883
 # creo 10 topicos, uno por sensor (sensor/datos_0 a sensor/datos_9)
-topics = ["sensor/datos_" + str(i) for i in range(2)]#(10)
+topics = ["sensor/datos_" + str(i) for i in range(2)]
 #---------------------------------
 
 
@@ -60,6 +60,7 @@ def on_message(database_file, client, userdata, message):
         medicion = payload.get('v')
 
         #print(f"guardando dato: {medicion} en {topic} en db: {database_file}")
+        #print(medicion)
         if medicion is not None: #si tengo medicion
             write_meas_to_db(database_file, topic, medicion)
     except Exception as e:
@@ -92,7 +93,7 @@ mqtt_exit_event       = threading.Event()
 def programar_actualizacion_tabla_estado(database_file, 
                                          time_duration, 
                                          t0):
-    while not update_progress_event.wait(10):#60):  # Espera hasta que el evento esté activo o transcurra 1 minuto (60 segundos)
+    while not update_progress_event.wait(2):#60):  # Espera hasta que el evento esté activo o transcurra 1 minuto (60 segundos)
         guardar_estado_programa(database_file, 
                                 time_duration, 
                                 time.time()-t0)
@@ -105,18 +106,14 @@ def mqtt_exit_thread(time_duration):
     mqtt_exit_event.set()
 
 
-
-
-#database_file = "datos_sensores2.db" #nombre de la base de datos
-
 #esta parte de acá lo que hace es ejecutar el archivo silo si se llama
 # de este mismo archivo (es un poco más avanzado, por ahora, quedense
 # con que el if no tiene una funcionalidad especial).
 def main():
     database_file, time_duration = parse()
 
-    print("Conectando al broker.")
-    client = mqtt.Client(client_id = "Raspberry")
+    print("Conectando al broker")
+    client = mqtt.Client(client_id = "LaCompuDeCarlitos2")
     client.connect(broker_address, broker_port)
 
     on_msg = lambda x,y,z: on_message(database_file, x,y,z)
@@ -143,11 +140,9 @@ def main():
     client.loop_start()
 
     # Esperar hasta que se alcance el tiempo de duración o se active el evento de salida del cliente MQTT
-    #update_progress_event.wait()
     update_exit_thread.start()
     mqtt_exit_event.wait()
     # Activar el evento de salida del cliente MQTT
-    #mqtt_exit_event.set()
 
     # Esperar a que el cliente MQTT termine
     client.loop_stop()
@@ -160,4 +155,3 @@ def main():
 print(__name__)
 if __name__ == "__main__":
     main()
-    #python read_and_save.py -t 15s -d asd
