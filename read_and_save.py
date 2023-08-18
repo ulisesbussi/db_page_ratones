@@ -97,12 +97,16 @@ def programar_actualizacion_tabla_estado(database_file,
         guardar_estado_programa(database_file, 
                                 time_duration, 
                                 time.time()-t0)
+        last_exp_data["Running"] = None
+        page.page_utils.write_exp_file(last_exp_data)
         print("guardando progreso")
 
 
 def mqtt_exit_thread(time_duration):
     # Espera hasta que se alcance el tiempo de duración o se active el evento de salida del cliente MQTT
     time.sleep(time_duration)
+    last_exp_data["Running"] = 578
+    page.page_utils.write_exp_file(last_exp_data)
     mqtt_exit_event.set()
 
 
