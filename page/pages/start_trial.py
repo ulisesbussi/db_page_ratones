@@ -118,9 +118,8 @@ def update_output(values: list, name:str):
           )
 
 def run_experiment(click: int, inter:int , name: str, values: list):
-    global last_exp_data
     global subpro
-    #triggered_props = Dash.callback_context.triggered_prop_ids
+    global last_exp_data
     trigger_id =ctx.triggered_id
     if trigger_id =="start-button": #if click == 0:
         name = '..\\dbs\\' + name + '.db' if name != '' else '..\\dbs\\exp.db'
@@ -129,28 +128,28 @@ def run_experiment(click: int, inter:int , name: str, values: list):
         ts = vv[-1] + 60 * (vv[-2] + 60 * (vv[-3] + 24 * vv[-4]))
         last_exp_data = {'db_name': name, 'time_seg': ts}
         
-        page_utils.write_exp_file(last_exp_data)    #dbname = name.split('\\')[-1]
+        page_utils.write_exp_file(last_exp_data)
         read_and_save_path = "C:\\Users\\Lucas\\Documents\\Lucas\\Ratones\\db_page_ratones-main\\read_and_save.py" #print(name)
-        #subpro=subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
         subpro=subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
-        poll = subpro.poll()
-        last_exp_data["Running"] = poll
+        # poll = subpro.poll()
+        # last_exp_data["Running"] = poll
         page_utils.write_exp_file(last_exp_data)  
         return [f"Experimento corriendo {last_exp_data['db_name']}",
-            check_if_running_exp(last_exp_data,poll)]
+            check_if_running_exp(last_exp_data,last_exp_data.get("Running"))]
     elif trigger_id =="interval-component": 
-        try:
-            poll = subpro.poll()
-        except:
-            poll = 578 #checkear valor
-        last_exp_data["Running"] = poll
-        page_utils.write_exp_file(last_exp_data)    
+        # try:
+        #     # poll = subpro.poll()
+        #     last_exp_data = page_utils.read_exp_file()
+        #     if last_exp_data.get("Running") == None:
+        # except:
+        #     poll = 578 #checkear valor
+        # last_exp_data["Running"] = poll
+        # page_utils.write_exp_file(last_exp_data)    
 
-        if poll == None:
-            return ["", check_if_running_exp(last_exp_data,poll)]
+        if last_exp_data.get("Running") == None:
+            return ["", check_if_running_exp(last_exp_data,last_exp_data.get("Running"))]
         else: 
             return ["",f"Experimento {last_exp_data['db_name']} finalizado"]
-    
     
     #run_experiment_thread(name, ts)
     
