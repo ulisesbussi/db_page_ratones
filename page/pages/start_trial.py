@@ -40,8 +40,7 @@ def get_selector(id:str ,r: int, lab: str|None = None):
                      className= "dur_dd"
             )
     
-
-
+"""Defino el layout de la pestaña"""
 layout = html.Div([
     html.Link(
         rel='stylesheet',
@@ -107,7 +106,8 @@ def update_output(values: list, name:str):
         
     return [text]
 
-
+"""Este callback corre cuando pasa el tiempo del intervalo definido o 
+cuando se le da comienzo a algun exp"""
 @callback([Output('exp-runing', 'children'),
            Output('running-div', 'children'),],
           [Input('start-button', 'n_clicks'),
