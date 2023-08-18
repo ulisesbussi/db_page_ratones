@@ -1,5 +1,6 @@
 from dash import Dash
 import dash_bootstrap_components as dbc
+import page_utils
 last_exp_data= page_utils.read_exp_file()
 last_exp_data["Running"] = 578
 
