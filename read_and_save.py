@@ -11,7 +11,8 @@ from pytimeparse.timeparse import timeparse
 # imports locales
 from db_manipulation.utils import write_meas_to_db, guardar_estado_programa
 #---------------------------------
-
+import page.page_utils 
+last_exp_data= page.page_utils.read_exp_file()
 
 #---------------------------------
 #definición variables broker y topicos
