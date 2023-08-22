@@ -1,36 +1,31 @@
-import subprocess
 from dash import (
                 dcc, html, Input, 
                 Output, State, ctx, callback, ALL,
                 register_page,
     )
 import dash_bootstrap_components as dbc
+import subprocess
 
-
+"""Importo las librerias necesarias a utilizar"""
 #----------------------------register--------------------------
 register_page(__name__, path="/",name='Comenzar experimento')
 #--------------------------------------------------------------
-
-
-
-#from .utils import read_exp_fil, write_exp_file
-import page_utils
-
+import page_utils 
 last_exp_data= page_utils.read_exp_file()
 
-
-
-def check_if_running_exp(last_exp_data : dict, poll : int):
-    if poll == None:
+def check_if_running_exp(last_exp_data : dict):
+    print("check running..")
+    print(last_exp_data.get("Running") is None)
+    if last_exp_data.get("Running") is None:
+        """Mientras el Script de read_and_save este corriendo"""
         name = last_exp_data.get('db_name')
         dur = last_exp_data.get('time_seg')
         return f"Corriendo el experimento {name} con duración: {dur} segs"
     return f"Experimento {last_exp_data['db_name']} finalizado"
-   
-
 
 
 def get_selector(id:str ,r: int, lab: str|None = None):
+    """?"""
     lab = id if lab is None else lab
     options = [{'value': i, 'label': f"{i} {lab}"} for i in range(r)]
 
@@ -39,8 +34,9 @@ def get_selector(id:str ,r: int, lab: str|None = None):
                      value = str(options[0]['value']),
                      className= "dur_dd"
             )
-    
+
 """Defino el layout de la pestaña"""
+
 layout = html.Div([
     html.Link(
         rel='stylesheet',
@@ -48,11 +44,11 @@ layout = html.Div([
     ),
     html.H1("Comienzo experimento"),
      dcc.Interval(id = "interval-component",
-         interval    = 10*1000,
+         interval    = 5*1000,
          n_intervals = 0,
      ),    
      html.Div([
-        html.H2(check_if_running_exp(last_exp_data,77),
+        html.H2(check_if_running_exp(last_exp_data),
                 className="running-div",
                 id="running-div")
         ],
@@ -85,10 +81,6 @@ layout = html.Div([
     ),
 ])
 
-
-
-
-
 @callback(Output('output', 'children'),
           [Input({'type': 'dur_dd', 'id':ALL}, 'value')],
           Input('exp-name', 'value'),
@@ -120,14 +112,13 @@ cuando se le da comienzo a algun exp"""
 def run_experiment(click: int, inter:int , name: str, values: list):
     global subpro
     global last_exp_data
-    trigger_id =ctx.triggered_id
+    trigger_id = ctx.triggered_id
     if trigger_id =="start-button": #if click == 0:
         name = '..\\dbs\\' + name + '.db' if name != '' else '..\\dbs\\exp.db'
         
         vv = [int(v) for v in values]
         ts = vv[-1] + 60 * (vv[-2] + 60 * (vv[-3] + 24 * vv[-4]))
         last_exp_data = {'db_name': name, 'time_seg': ts}
-        
         page_utils.write_exp_file(last_exp_data)
         read_and_save_path = "C:\\Users\\Lucas\\Documents\\Lucas\\Ratones\\db_page_ratones-main\\read_and_save.py" #print(name)
         subpro=subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
@@ -135,21 +126,19 @@ def run_experiment(click: int, inter:int , name: str, values: list):
         # last_exp_data["Running"] = poll
         page_utils.write_exp_file(last_exp_data)  
         return [f"Experimento corriendo {last_exp_data['db_name']}",
-            check_if_running_exp(last_exp_data,last_exp_data.get("Running"))]
-    elif trigger_id =="interval-component": 
-        # try:
-        #     # poll = subpro.poll()
-        #     last_exp_data = page_utils.read_exp_file()
-        #     if last_exp_data.get("Running") == None:
-        # except:
-        #     poll = 578 #checkear valor
-        # last_exp_data["Running"] = poll
-        # page_utils.write_exp_file(last_exp_data)    
-
-        if last_exp_data.get("Running") == None:
-            return ["", check_if_running_exp(last_exp_data,last_exp_data.get("Running"))]
+            check_if_running_exp(last_exp_data)] 
+    else:    
+        last_exp_data= page_utils.read_exp_file()
+        if last_exp_data.get("Running") is None:
+            return ["", check_if_running_exp(last_exp_data)]
         else: 
             return ["",f"Experimento {last_exp_data['db_name']} finalizado"]
-    
-    #run_experiment_thread(name, ts)
-    
+# try:
+    #     # poll = subpro.poll()
+    #     last_exp_data = page_utils.read_exp_file()
+    #     if last_exp_data.get("Running") == None:
+    # except:
+    #     poll = 578 #checkear valor
+    # last_exp_data["Running"] = poll
+    # page_utils.write_exp_file(last_exp_data)    
+
