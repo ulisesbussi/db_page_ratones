@@ -1,11 +1,12 @@
 from dash import (
                 dcc, html, Input, 
                 Output, callback,
-                register_page, Patch, no_update,
+                register_page, Patch,
     )
 import dash_bootstrap_components as dbc
 import pandas as pd
 from plotly import graph_objs as go
+#import time
 from dash_bootstrap_templates import load_figure_template
 import sqlite3
 
@@ -123,7 +124,7 @@ def actualizar_grafico():
 @callback(Output("sensor-graph", "figure"),
               [Input("interval-component", "n_intervals"),
                 Input("boton-actualizar", "n_clicks")],
-               prevent_initial_call = True
+               prevent_initial_call = False
     )
 def refresh(n_intervals, 
                         n_clicks, 
@@ -132,10 +133,10 @@ def refresh(n_intervals,
     global last_exp_data
     "esta funcion refresca la página"
     last_exp_data = page_utils.read_exp_file()
-    if last_exp_data.get("Running") == None:
+    if last_exp_data.get("Running") is None:
         patched_fig = actualizar_grafico()
         return  patched_fig
-    return no_update
+    return create_fig()
 
 
 # Actualiza el porcentaje de la barra de progreso
@@ -144,13 +145,13 @@ def refresh(n_intervals,
     Output("barra_progreso", "label"),
     Input("interval-component", "n_intervals"),
     Input("boton-actualizar", "n_clicks"),
-    prevent_initial_call = True
+    prevent_initial_call = False
 )
 
 def actualizar_progreso(n_intervals, n_clicks):
     global last_exp_data
     last_exp_data= page_utils.read_exp_file()
-    if last_exp_data.get("Running") == None:
+    if last_exp_data.get("Running") is None:
         # Conecta a la base de datos
         conn = sqlite3.connect(last_exp_data.get("db_name"))  # Cambia "nombre_de_tu_base_de_datos.db" al nombre de tu base de datos
     
@@ -169,6 +170,15 @@ def actualizar_progreso(n_intervals, n_clicks):
         porcentaje = calcular_porcentaje(tiempo_deseado, tiempo_actual)
         return [porcentaje,f"{porcentaje}%"]
     return [0,"0%"]
+
+
+
+
+
+
+
+
+
 
 
 
