@@ -64,6 +64,7 @@ def on_message(database_file, client, userdata, message):
         #print(medicion)
         if medicion is not None: #si tengo medicion
             write_meas_to_db(database_file, topic, medicion)
+            
     except Exception as e:
         print("Error al guardar el dato:", e)
 #---------------------------------
@@ -155,7 +156,8 @@ def main():
     guardar_estado_programa(database_file, 
                                 time_duration, 
                                 time_duration)
-
+    last_exp_data["Running"] = 578
+    page.page_utils.write_exp_file(last_exp_data)
 
 print(__name__)
 if __name__ == "__main__":
