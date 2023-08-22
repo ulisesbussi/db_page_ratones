@@ -107,5 +107,6 @@ def convertir_archivo(n_clicks, archivo_seleccionado):
 )
 def update_dropdown_options(n):
     archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
+    archivos_en_carpeta.sort()
     dropdown_options = [{'label': archivo, 'value': archivo} for archivo in archivos_en_carpeta]
     return dropdown_options
