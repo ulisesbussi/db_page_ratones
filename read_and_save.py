@@ -101,15 +101,30 @@ def programar_actualizacion_tabla_estado(database_file,
                                 time.time()-t0)
         last_exp_data["Running"] = None
         page.page_utils.write_exp_file(last_exp_data)
-        print("guardando progreso")
+        print("guardando progreso") #Conforme se cargan los datos de la base de datos actualizamos la variable para saber que el programa esta corriendo
 
 
-def mqtt_exit_thread(time_duration):
+# def mqtt_exit_thread(time_duration):
+#     # Espera hasta que se alcance el tiempo de duración o se active el evento de salida del cliente MQTT
+#     time.sleep(time_duration)
+#     last_exp_data["Running"] = 578
+#     page.page_utils.write_exp_file(last_exp_data)
+#     mqtt_exit_event.set()
+
+def mqtt_exit_thread(time_duration,last_exp_data):
     # Espera hasta que se alcance el tiempo de duración o se active el evento de salida del cliente MQTT
-    time.sleep(time_duration)
-    last_exp_data["Running"] = 578
-    page.page_utils.write_exp_file(last_exp_data)
-    mqtt_exit_event.set()
+    start_time = time.time()
+    while time.time() - start_time < time_duration:
+        last_exp_data= page.page_utils.read_exp_file()
+        if last_exp_data.get("Running") == 77:
+            mqtt_exit_event.set()
+        time.sleep(0.1)
+    last_exp_data= page.page_utils.read_exp_file()
+    if last_exp_data.get("Running") != 77:
+        last_exp_data["Running"] = 578
+        page.page_utils.write_exp_file(last_exp_data)
+        mqtt_exit_event.set()
+# chequea si el experimento termino durante el tiempo pautado de duracion del experimento
 
 
 #esta parte de acá lo que hace es ejecutar el archivo silo si se llama
@@ -136,7 +151,7 @@ def main():
         daemon=True    )
     update_exit_thread = threading.Thread(
         target= mqtt_exit_thread,
-        args=(time_duration,),
+        args=(time_duration,last_exp_data),
         daemon=True    )
     
     update_progress_thread.start()
@@ -156,8 +171,8 @@ def main():
     guardar_estado_programa(database_file, 
                                 time_duration, 
                                 time_duration)
-    last_exp_data["Running"] = 578
-    page.page_utils.write_exp_file(last_exp_data)
+    # last_exp_data["Running"] = 578
+    # page.page_utils.write_exp_file(last_exp_data)
 
 print(__name__)
 if __name__ == "__main__":
