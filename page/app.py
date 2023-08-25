@@ -1,10 +1,10 @@
 from dash import Dash
 import dash_bootstrap_components as dbc
-import page_utils 
+#import page_utils 
 import webbrowser
-last_exp_data= page_utils.read_exp_file()
-last_exp_data["Running"] = 578
-page_utils.write_exp_file(last_exp_data)
+#last_exp_data= page_utils.read_exp_file()
+#last_exp_data["Running"] = 578
+#page_utils.write_exp_file(last_exp_data)
 
 app = Dash(__name__,
            use_pages=True, 
