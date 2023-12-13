@@ -26,7 +26,7 @@ def check_if_running_exp(last_exp_data : dict):
         return f"Experimento {last_exp_data['db_name']} finalizado"
     return f"Experimento {last_exp_data['db_name']} detenido"
 
-def get_selector(id:str ,r: int, lab: str|None = None):
+def get_selector(id:str ,r: int, lab: str= None):
     """?"""
     lab = id if lab is None else lab
     options = [{'value': i, 'label': f"{i} {lab}"} for i in range(r)]
@@ -121,14 +121,15 @@ def run_experiment(click: int, inter:int ,click2: int, name: str, values: list):
     global last_exp_data
     trigger_id = ctx.triggered_id
     if trigger_id =="start-button": #if click == 0:
-        name = '..\\dbs\\' + name + '.db' if name != '' else '..\\dbs\\exp.db'
-        
+        #name = '../dbs/' + name + '.db' if name != '' else '../dbs/exp.db'
+        name = name if name!='' else 'exp'
+        name = f'/home/raspberryunq/db_page_ratones-main/dbs/{name}.db'
         vv = [int(v) for v in values]
         ts = vv[-1] + 60 * (vv[-2] + 60 * (vv[-3] + 24 * vv[-4]))
         last_exp_data = {'db_name': name, 'time_seg': ts}
         page_utils.write_exp_file(last_exp_data)
-        read_and_save_path = "C:\\Users\\Lucas\\Documents\\Lucas\\Ratones\\db_page_ratones-main\\read_and_save.py" #print(name)
-        subprocess.Popen(["python", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
+        read_and_save_path = "/home/raspberryunq/db_page_ratones-main/read_and_save.py" #print(name)
+        subprocess.Popen(["python3.11", read_and_save_path ,'-d', name, '-t', f'{ts}s'])
         return [f"Experimento corriendo {last_exp_data['db_name']}",
             check_if_running_exp(last_exp_data)] 
     elif trigger_id == "stop-button":
@@ -142,3 +143,4 @@ def run_experiment(click: int, inter:int ,click2: int, name: str, values: list):
         #     return ["", check_if_running_exp(last_exp_data)]
         # else: 
         return ["",check_if_running_exp(last_exp_data)]
+

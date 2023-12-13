@@ -1,21 +1,21 @@
 /* Ajustar el ancho de los elementos en función del tamaño del navegador */
 @media screen  and (min_width:768px){ /* Estilo para dispositivos pequeños (<= 768px) */
     .row-exp.dur_dd {
-        width: 30%;
+        width: 22.5%;
         margin-right: 0px;
     }
     
     .mb-3 {
         width: 100%;
-        height: 10px;
-        margin-right: 250px;
+        height: 7.5px;
+        margin-right: 187.5px;
     
         
     }
     
     .row-exp {
-        width: 60%;
-        height: 100%;
+        width: 45%;
+        height: 75%;
     
     }
 
@@ -24,7 +24,7 @@
 
 
 .navbar{
-    font-size: 20px;
+    font-size: 15px;
 
 }
 
@@ -34,10 +34,10 @@
 
 
 .running-exp {
-    height: 100%;
-    width: 80%;
+    height: 75%;
+    width: 60%;
     border: 5px dashed rgb(102, 102, 102);
-    margin: 20px 20px 20px 20px;
+    margin: 26.7px 26.7px 26.7px 26.7px;
     border-radius: 20px;
     display: flex; /* Activa el sistema de Flexbox */
     justify-content: center; /* Centra horizontalmente el contenido */
@@ -46,7 +46,7 @@
 }
 
 .running-div{ 
-    margin: 20px 20px 20px 20px;
+    margin: 26.7px 26.7px 26.7px 26.7px;
 
 }
 
@@ -54,9 +54,9 @@
     width: 100%;
     height: 100%;
     color: black;
-    text-size-adjust: 10px;
+    text-size-adjust: 7.5px;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 15px;
     /*border:  5px dashed rgb(102, 102, 102);*/
     border-radius: 20px;
 }

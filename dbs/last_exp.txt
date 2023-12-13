@@ -1,1 +1,1 @@
-{"db_name": "..\\dbs\\datos_sensores.db", "time_seg": 1130589}
+{"db_name": "/home/raspberryunq/db_page_ratones-main/dbs/jh.db", "time_seg": 240, "Running": 578}

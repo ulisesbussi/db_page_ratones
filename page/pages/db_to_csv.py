@@ -15,23 +15,32 @@ register_page(__name__, path="/to_csv",name='Exportar a csv')
 
 import page_utils
 last_exp_data= page_utils.read_exp_file()
-
 def convert_timestamp(ts):
     return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S.%f')
-
 def obtener_datos_desde_bd(name :str ):
     """Leo los datos de la base de datos y devuelvo dict de dataFrames"""
     conn = sqlite3.connect(name)
     dfs = {}
-    for i in range(2):
-        df = pd.read_sql_query(f"SELECT * FROM datos_{i}", conn)  # Tablas para los canales sensor/datos_0 a sensor/datos_9
-        df['tiempo'] = df['tiempo'].apply(convert_timestamp)
-        #df['tiempo'] = datetime.datetime.fromtimestamp(df['tiempo']).strftime('%Y-%m-%d %H:%M:%S.%f')
-        dfs[f"datos_{i}"] = df.to_dict()
+    for i in range(50):
+        try: 
+            df = pd.read_sql_query(f"SELECT * FROM datos_{i}", conn)  # Tablas para los canales sensor/datos_0 a sensor/datos_9
+            df['tiempo'] = df ['tiempo'].apply(convert_timestamp)
+            dfs[f"datos_{i}"] = df.to_dict()
+        except pd.errors.DatabaseError:
+            break #rompo for
+       
     conn.close()
     return dfs
-
-carpeta_archivos = "\\Users\\alefermatulu\\Documents\\Lucas\\db_page_ratones-main\\dbs"
+def obtener_carpeta_pendrive():
+    base_dir = '/media/raspberryunq'
+    dirs = [d for d in os.listdir(base_dir) if os.path.isdir(os.path.join(base_dir,d))]
+    if dirs:
+        first_dir = dirs[0]
+        pendrive_dir = os.path.join(base_dir,first_dir)+'/Ratones'
+        return pendrive_dir
+    else: 
+        return None
+carpeta_archivos = "/home/raspberryunq/db_page_ratones-main/dbs"
 
 # Obtener la lista de archivos en la carpeta
 #archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
@@ -48,7 +57,7 @@ layout = dbc.Container([
     html.H1("Conversor de Archivos", className="mt-4"),
     dcc.Interval(
         id='interval-component',
-        interval=30 * 1000,  # Actualizar cada 60 segundos
+        interval=60 * 1000,  # Actualizar cada 60 segundos
         n_intervals=0
     ),
     dbc.Row([
@@ -86,10 +95,13 @@ def convertir_archivo(n_clicks, archivo_seleccionado):
     if n_clicks is None:
         return ""
 
-    if archivo_seleccionado ==  None:
+    if archivo_seleccionado is None:
         return "Seleccione un archivo válido antes de convertir."
     else:
-        output_folder =r'C:\Users\alefermatulu\Documents\Lucas\db_page_ratones-main\out_csv'
+        #output_folder =r'/home/raspberryunq1/Documentos/db_page_ratones-main/out_csv'
+        output_folder=obtener_carpeta_pendrive()
+        if output_folder is None:
+            return 'Conecte un Pendrive y vuelva a intentarlo '
         if not os.path.exists(output_folder):
             os.mkdir(output_folder)
         
@@ -107,6 +119,5 @@ def convertir_archivo(n_clicks, archivo_seleccionado):
 )
 def update_dropdown_options(n):
     archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
-    archivos_en_carpeta.sort()
     dropdown_options = [{'label': archivo, 'value': archivo} for archivo in archivos_en_carpeta]
     return dropdown_options

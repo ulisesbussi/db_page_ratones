@@ -1,7 +1,7 @@
 import os
 import json
 
-exp_file = "../dbs/last_exp.txt"
+exp_file = "/home/raspberryunq/db_page_ratones-main/dbs/last_exp.txt"
 
 def read_exp_file():
     if os.path.exists(exp_file):

@@ -1,7 +1,7 @@
 from dash import (
                 dcc, html, Input, 
                 Output, callback,
-                register_page, Patch,
+                register_page, Patch, no_update,
     )
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -30,9 +30,12 @@ def trace_from_df(df_dict : dict, i : int):
     """ trace es la línea que voy a poner en 
     el plot, lo creo para agregarlo"""
     df = pd.DataFrame(df_dict)
+    df["dist"] = df["valor"].cumsum()
+    df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
+    #df['tiempo'] = df['tiempo'].to_timestamp()
     trace = {
         "x": df["tiempo"],
-        "y": df["valor"],
+        "y": df["dist"], #df["valor"],
         "type": "scatter",
         "mode": "lines",
         "name": f"Sensor {i}",
@@ -40,10 +43,10 @@ def trace_from_df(df_dict : dict, i : int):
     return trace
 
 def create_fig():
-    fig = go.Figure(data=[{"x": [], "y": []} for i in range(2)])
+    fig = go.Figure(data=[{"x": [], "y": []} for i in range(3)])
     fig["layout"] = {"title" : "Datos de Sensores",
         "xaxis_title" : "Tiempo", 
-        "yaxis_title" : "Valor"
+        "yaxis_title" : "Distancia"
     }
     return fig
 
@@ -108,23 +111,25 @@ def actualizar_grafico():
     if last_exp_data.get("db_name") is None:
         return patched_fig
     
-    for i in range(2):
-        table_name = f"datos_{i}"
+    for i in range(1):
+        table_name =    f"datos_{i}"
         data = dbu.obtener_datos_desde_tabla(last_exp_data.get("db_name"),
                                               table_name,
                                               step = 1)
+        print(f"data {data}")
         this_trace = trace_from_df(data,i)
     
         #si la tabla no está vacía agrego los datos    
         if this_trace is not None:
             patched_fig["data"][i] = this_trace
+            
     return  patched_fig
 
 
 @callback(Output("sensor-graph", "figure"),
               [Input("interval-component", "n_intervals"),
                 Input("boton-actualizar", "n_clicks")],
-               prevent_initial_call = False
+               prevent_initial_call = True
     )
 def refresh(n_intervals, 
                         n_clicks, 
@@ -145,7 +150,7 @@ def refresh(n_intervals,
     Output("barra_progreso", "label"),
     Input("interval-component", "n_intervals"),
     Input("boton-actualizar", "n_clicks"),
-    prevent_initial_call = False
+    prevent_initial_call = True
 )
 
 def actualizar_progreso(n_intervals, n_clicks):
@@ -170,15 +175,6 @@ def actualizar_progreso(n_intervals, n_clicks):
         porcentaje = calcular_porcentaje(tiempo_deseado, tiempo_actual)
         return [porcentaje,f"{porcentaje}%"]
     return [0,"0%"]
-
-
-
-
-
-
-
-
-
 
 
 
