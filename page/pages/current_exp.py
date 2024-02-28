@@ -5,6 +5,7 @@ from dash import (
     )
 import dash_bootstrap_components as dbc
 import pandas as pd
+#import plotly
 from plotly import graph_objs as go
 #import time
 from dash_bootstrap_templates import load_figure_template
@@ -30,12 +31,39 @@ def trace_from_df(df_dict : dict, i : int):
     """ trace es la línea que voy a poner en 
     el plot, lo creo para agregarlo"""
     df = pd.DataFrame(df_dict)
-    df["dist"] = df["valor"].cumsum()
-    df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
+    # ~ df["dist"] = df["valor"].cumsum()
+    # ~ df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
+
+    if len(df):
+        df["dist"] = df["valor"].cumsum()
+        df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
+    else:
+        df["dist"] = []
+    
     #df['tiempo'] = df['tiempo'].to_timestamp()
     trace = {
         "x": df["tiempo"],
         "y": df["dist"], #df["valor"],
+        "type": "scatter",
+        "mode": "lines",
+        "name": f"Sensor {i}",
+    }
+    return trace
+
+def trace_from_df_v(df_dict : dict, i : int):
+    """ trace es la línea que voy a poner en 
+    el plot, lo creo para agregarlo"""
+    df = pd.DataFrame(df_dict)
+    # ~ df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
+    if len(df):
+    #df["dist"] = df["valor"].cumsum()
+        df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
+    else:
+        df["valor"] = []
+    # ~ #df['tiempo'] = df['tiempo'].to_timestamp()
+    trace = {
+        "x": df["tiempo"],
+        "y": df["valor"],
         "type": "scatter",
         "mode": "lines",
         "name": f"Sensor {i}",
@@ -48,8 +76,24 @@ def create_fig():
         "xaxis_title" : "Tiempo", 
         "yaxis_title" : "Distancia"
     }
+    fig.update_layout(autosize=False,width=800,height=320,
+    margin=dict(l=10,r=20,b=30,t=40))
     return fig
 
+def create_fig_v():
+    
+    custom_colors = ['#1f77b4' , '#ff7f0e', '#2ca02c', '#d62728' , '#9467bd' ,
+                    '#8c564b' , '#e377c2' , '#7f7f7f' , '#bcbd22' , '#17becf']
+                    
+    fig = go.Figure(data=[{"x": [], "y": [] , "line" : {"color" : custom_colors[i %
+    len(custom_colors)]}} for i in range(3)])
+    fig["layout"] = {"title" : "Datos de Sensores",
+        "xaxis_title" : "Tiempo", 
+        "yaxis_title" : "Velocidad"
+    }
+    fig.update_layout(autosize=False,width=800,height=320,
+    margin=dict(l=10,r=20,b=30,t=40))
+    return fig
 intervalo_actualiazcion = 50 * 1000  # 50 segundos en milisegundos
 
 
@@ -62,20 +106,35 @@ layout = html.Div([
         interval    = intervalo_actualiazcion,
         n_intervals = 0,
     ),
-    html.Div([
-    dbc.Progress(label="0%", value=0,className="progress-bar",
-                     id = "barra_progreso" ,
-                      animated= True, color="success",
-                      ), #aca mostrar progreso
-        ],
-        className = "running-exp"
-    ),
+    dbc.Row([
+      dbc.Col([
+        html.Div([
+            dbc.Progress(label="0%", value=0,className="progress-bar",
+                         id = "barra_progreso" ,
+                         animated= True, color="success",
+                            ), #aca mostrar progreso
+            ], className = "running-exp"),
+         ],width=8),
+            
+      dbc.Col([
+        dbc.Button("Actualizar Gráfico",
+                    id="boton-actualizar",
+                    n_clicks=0
+                    ),
+                ],width=4,className='mt-1'),
+        
+    ]),
+    dbc.Tabs([
+        dbc.Tab([
+            dcc.Graph(id="sensor-graph-vel", figure=create_fig_v()),
+            ], label='Velocidad',tab_id='tab_vel'),
+        dbc.Tab([
+            dcc.Graph(id="sensor-graph-dist", figure=create_fig()),
+            ],label='Distancia',tab_id='tab_dist'),
+    ], id ="card-tabs",active_tab="tab_vel",),
     
-    dcc.Graph(id="sensor-graph", figure=create_fig()),
-    dbc.Button("Actualizar Gráfico",
-        id="boton-actualizar",
-        n_clicks=0
-    ),
+    #dcc.Graph(id="sensor-graph", figure=create_fig()),
+   
     
     
 ])
@@ -111,7 +170,7 @@ def actualizar_grafico():
     if last_exp_data.get("db_name") is None:
         return patched_fig
     
-    for i in range(1):
+    for i in range(10):
         table_name =    f"datos_{i}"
         data = dbu.obtener_datos_desde_tabla(last_exp_data.get("db_name"),
                                               table_name,
@@ -126,7 +185,29 @@ def actualizar_grafico():
     return  patched_fig
 
 
-@callback(Output("sensor-graph", "figure"),
+def actualizar_grafico_v():
+    patched_fig = Patch()
+    #para cada tabla
+    if last_exp_data.get("db_name") is None:
+        return patched_fig
+    
+    for i in range(10):
+        table_name =    f"datos_{i}"
+        data = dbu.obtener_datos_desde_tabla(last_exp_data.get("db_name"),
+                                              table_name,
+                                              step = 1)
+        print(f"data {data}")
+        this_trace = trace_from_df_v(data,i)
+    
+        #si la tabla no está vacía agrego los datos    
+        if this_trace is not None:
+            patched_fig["data"][i] = this_trace
+            
+    return  patched_fig
+
+
+@callback([Output("sensor-graph-vel", "figure"),
+            Output("sensor-graph-dist", "figure")],
               [Input("interval-component", "n_intervals"),
                 Input("boton-actualizar", "n_clicks")],
                prevent_initial_call = True
@@ -140,8 +221,9 @@ def refresh(n_intervals,
     last_exp_data = page_utils.read_exp_file()
     if last_exp_data.get("Running") is None:
         patched_fig = actualizar_grafico()
-        return  patched_fig
-    return create_fig()
+        patched_fig1 = actualizar_grafico_v()
+        return  patched_fig1, patched_fig    
+    return create_fig_v(),create_fig()
 
 
 # Actualiza el porcentaje de la barra de progreso

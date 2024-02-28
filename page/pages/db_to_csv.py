@@ -1,7 +1,7 @@
 from dash import (
                 dcc, html, Input, 
                 Output, State ,callback,
-                register_page,
+                register_page, no_update
     )
 import pandas as pd
 import dash_bootstrap_components as dbc
@@ -9,14 +9,14 @@ import os
 import sqlite3
 import datetime
 #---------------------------register--------------------------------
-register_page(__name__, path="/to_csv",name='Exportar a csv')
+register_page(__name__, path="/to_csv",name='Exportar o Eliminar')
 #-------------------------------------------------------------------
 
 
 import page_utils
 last_exp_data= page_utils.read_exp_file()
 def convert_timestamp(ts):
-    return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S.%f')
+    return datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S.%f')#('%Y-%m-%d %H:%M:%S.%f')
 def obtener_datos_desde_bd(name :str ):
     """Leo los datos de la base de datos y devuelvo dict de dataFrames"""
     conn = sqlite3.connect(name)
@@ -54,7 +54,7 @@ carpeta_archivos = "/home/raspberryunq/db_page_ratones-main/dbs"
 como una página.
 """
 layout = dbc.Container([
-    html.H1("Conversor de Archivos", className="mt-4"),
+    html.H1("Conversor y Eliminador de Archivos", className="mt-4"),
     dcc.Interval(
         id='interval-component',
         interval=60 * 1000,  # Actualizar cada 60 segundos
@@ -75,15 +75,53 @@ layout = dbc.Container([
                        id='boton-convertir',
                        n_clicks=0,
                        color="primary",
-                       className="ml-2 btn"),
+                       className="ml-2 btn"
+            ),
             width=2
         ),
     ]),
     dbc.Row([
         dbc.Col(html.Div(id='mensaje-convertido', className="mt-3")),
     ]),
-], className="mt-3")
+    dbc.Row([
+        dbc.Col(
+            dcc.Dropdown(
+                id='dropdown-archivos-borrar',
+                options=[],
+                multi=True,
+                placeholder="Seleccione un archivo a borrar",
+                style={'color':'red'}
+            ),
+            width=6
+        ),
+        dbc.Col(
+            dbc.Button('Borrar',
+                        id='boton-borrar',
+                        n_clicks=0,
+                        color="danger",
+                        className="ml-2 btn"),
+            width=2
+        ),
+    ]),
+    #Modal de confirmacion
+    dbc.Modal(
+        [
+            dbc.ModalHeader("Confirmación"),
+            dbc.ModalBody("¿Estas Seguro? Los archivos se borrarán permanentemente"),
+            dbc.ModalFooter([
+                dbc.Button("Cancelar", id="close",className="ml.auto"),
+                dbc.Button("Borrar", color="danger", id="confirm",className="ml.auto"),]
+            ),
+        ],
+        id="modal",
+    ),
+dbc.Row([
+    dbc.Col(html.Div(id='output-message', className="mt-3")),
+]),
+])
 
+
+        
 
 @callback(
     Output('mensaje-convertido', 'children'),
@@ -106,18 +144,72 @@ def convertir_archivo(n_clicks, archivo_seleccionado):
             os.mkdir(output_folder)
         
         dfs = obtener_datos_desde_bd(os.path.join(carpeta_archivos,archivo_seleccionado))
-        n=archivo_seleccionado.replace(".db", "")+"_"
+        #n=archivo_seleccionado.replace(".db", "")+"_"
+        carpeta_exp = os.path.join(output_folder,
+                                    archivo_seleccionado.replace(".db", ""))
+        print(carpeta_exp)
+        if not os.path.exists(carpeta_exp):
+            os.mkdir(carpeta_exp)
+        else:
+            print("mmm la carpeta del experimento ya existia...")
+                
         for f,d in dfs.items():
-            csv_filename = os.path.join(output_folder,n + f + '.csv')
+            #csv_filename = os.path.join(output_folder,n + f + '.csv')
+            csv_filename =os.path.join(carpeta_exp,f+'.csv')
             pd.DataFrame(d).to_csv(csv_filename,index=False)
         mensaje = f"Archivo '{archivo_seleccionado}' convertido exitosamente."
         return mensaje
 
 @callback(
     Output('dropdown-archivos', 'options'),
-    Input('interval-component', 'n_intervals')
+    [Input('interval-component', 'n_intervals'),
+    Input('confirm', 'n_clicks')]
 )
-def update_dropdown_options(n):
+def update_dropdown_options(n,c):
     archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
-    dropdown_options = [{'label': archivo, 'value': archivo} for archivo in archivos_en_carpeta]
+    archivos_ordenados = sorted(archivos_en_carpeta,key = lambda archivo:os.path.getmtime(os.path.join(carpeta_archivos, archivo)), reverse=True)
+    dropdown_options = [{'label': archivo, 'value': archivo} for archivo in archivos_ordenados]
     return dropdown_options
+
+@callback(
+    Output('dropdown-archivos-borrar', 'options'),
+    [Input('interval-component', 'n_intervals'),
+    Input('confirm', 'n_clicks')]
+)
+def update_dropdown_options(n,c):
+    archivos_en_carpeta = [archivo for archivo in os.listdir(carpeta_archivos) if archivo.endswith(".db")]
+    archivos_ordenados = sorted(archivos_en_carpeta,key = lambda archivo:os.path.getmtime(os.path.join(carpeta_archivos, archivo)), reverse=True)
+    dropdown_options = [{'label': archivo, 'value': archivo} for archivo in archivos_ordenados]
+    return dropdown_options
+    
+@callback(
+    Output('modal', 'is_open'),
+    [Input('boton-borrar', 'n_clicks'),
+     Input('close','n_clicks'),
+     Input('confirm', 'n_clicks')],
+    [State('modal','is_open')],
+    prevent_initial_call=True,
+)
+def toggle_modal(n_borrar, n_close, n_confirm, is_open):
+    #if n_borrar or n_close:
+    return not is_open
+    #return is_open
+    
+@callback(
+    [Output('output-message', 'children'),
+    Output('dropdown-archivos-borrar','value')],
+    [Input('confirm', 'n_clicks')],
+    [State('dropdown-archivos-borrar','value'),
+     State('modal', 'is_open')],
+     prevent_initial_call=True,
+)
+def delete_files(n_clicks, selected_files, is_open):
+    if selected_files is not None:
+        try:
+            for file in selected_files:
+                file_path = os.path.join(carpeta_archivos,file)
+                os.remove(file_path)
+            return f"Archivo {', '.join(selected_files)} borrado correctamente", None
+        except Exception as e:
+            return f"Error al borrar archivo: {str(e)}", None
+    return "mmm algo paso", None

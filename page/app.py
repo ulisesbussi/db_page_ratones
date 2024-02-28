@@ -24,4 +24,4 @@ app.layout = get_layout()
 if __name__ == '__main__':
     #webbrowser.open('http://127.0.0.1:8080/')
     #comente esto el 12 dic 2023 (ulises)
-    app.run_server(port=8080,debug=True,)
+    app.run_server(port=8080,debug=True, host= '0.0.0.0')

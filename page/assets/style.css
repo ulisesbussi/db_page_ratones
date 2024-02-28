@@ -13,15 +13,20 @@
         
     }
     
-    .row-exp {
-        width: 45%;
-        height: 75%;
-    
-    }
-
+ 
 
 }
 
+.row-exp {
+    width: 90%;
+}
+
+.row-exp .boton{
+    height: 80%;/*4.5rem;*/
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}    
 
 .navbar{
     font-size: 15px;
@@ -34,10 +39,10 @@
 
 
 .running-exp {
-    height: 75%;
-    width: 60%;
+    height: 60%;
+    width: 90%;
     border: 5px dashed rgb(102, 102, 102);
-    margin: 26.7px 26.7px 26.7px 26.7px;
+    margin: 10px 26.7px 10px 26.7px;
     border-radius: 20px;
     display: flex; /* Activa el sistema de Flexbox */
     justify-content: center; /* Centra horizontalmente el contenido */
@@ -46,7 +51,7 @@
 }
 
 .running-div{ 
-    margin: 26.7px 26.7px 26.7px 26.7px;
+    margin: 20px 26.7px 26.7px 26.7px;
 
 }
 
