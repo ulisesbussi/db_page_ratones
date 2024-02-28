@@ -15,8 +15,12 @@ register_page(__name__, path="/to_csv",name='Exportar o Eliminar')
 
 import page_utils
 last_exp_data= page_utils.read_exp_file()
-def convert_timestamp(ts):
-    return datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S.%f')#('%Y-%m-%d %H:%M:%S.%f')
+#def convert_timestamp(ts):
+#    return datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S.%f')#('%Y-%m-%d %H:%M:%S.%f')
+def convert_timestamp(df):
+    df['tiempo']= pd.to_datetime((df.tiempo-df.tiempo[0])*1e9).dt.strftime('%m-%d %H:%M:%S:%f')
+    return df
+
 def obtener_datos_desde_bd(name :str ):
     """Leo los datos de la base de datos y devuelvo dict de dataFrames"""
     conn = sqlite3.connect(name)
@@ -24,7 +28,8 @@ def obtener_datos_desde_bd(name :str ):
     for i in range(50):
         try: 
             df = pd.read_sql_query(f"SELECT * FROM datos_{i}", conn)  # Tablas para los canales sensor/datos_0 a sensor/datos_9
-            df['tiempo'] = df ['tiempo'].apply(convert_timestamp)
+            #df['tiempo'] = df ['tiempo'].apply(convert_timestamp)
+            df = convert_timestamp(df)
             dfs[f"datos_{i}"] = df.to_dict()
         except pd.errors.DatabaseError:
             break #rompo for
