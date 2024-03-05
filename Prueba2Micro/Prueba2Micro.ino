@@ -7,7 +7,7 @@ volatile unsigned long pulseCount = 0; // Variable para almacenar el conteo de p
 volatile  long pulsesPerSecond = 0; // Variable para almacenar el conteo de pulsos por segundo
 char msg[MSG_BUFFER_SIZE];
 Ticker pulseTicker; // Objeto Ticker para medir el tiempo transcurrido
-MyMQTT mqtt("RATONES", "ratones123", "192.168.4.1", 1883);
+MyMQTT mqtt("RATONES", "ratones123", "10.42.0.1", 1883);
 
 void IRAM_ATTR handleInterrupt()
 {
@@ -39,7 +39,7 @@ void loop() {
     snprintf(msg, MSG_BUFFER_SIZE, "{'v':%2d}", pulsesPerSecond);
     Serial.print("Pulsos por segundo: ");
     Serial.println(msg);
-    mqtt.publish("sensor/datos_0", msg);
+    mqtt.publish("sensor/datos_1", msg);
     pulsesPerSecond =-1;
 }
 }
