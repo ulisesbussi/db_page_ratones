@@ -28,6 +28,20 @@ def check_if_running_exp(last_exp_data : dict):
         return f"Experimento \"{soloname[:-3]}\" finalizado"
     return f"Experimento \"{last_exp_data['db_name'].split('/')[-1][:-3]}\" detenido"
 
+#def check_if_running_exp(last_exp_data):
+#    if last_exp_data.get("Running") is None:
+#        """Mientras el Script de read_and_save este corriendo"""
+#        name = last_exp_data.get('db_name')
+#        dur = last_exp_data.get('time_seg')
+#        soloname = name.split('/')[-1]
+#        return f"Corriendo el experimento \"{soloname[:-3]}\" con duración: {dur} segs"
+#    elif last_exp_data.get("Running") == 578:
+#        soloname = last_exp_data['db_name'].split('/')[-1]
+#        return f"Experimento \"{soloname[:-3]}\" finalizado"
+#    elif last_exp_data.get("Running") == 77:
+#      return f"Experimento \"{last_exp_data['db_name'].split('/')[-1][:-3]}\" detenido"
+#    return no_update
+
 def get_selector(id:str ,r: int, lab: str= None):
     """?"""
     lab = id if lab is None else lab
