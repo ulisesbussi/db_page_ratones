@@ -15,10 +15,8 @@ resto del programa (o debería)"""
 def write_meas_to_db(database_file :str, 
                      topic         :str, 
                      medicion      :float):
-     
     """esta función toma una medición de sensor y la escribe
     en la base de datos en la tabla correspondiente."""
-    print("en write_meas_to_db")
     try:
         conn = sqlite3.connect(database_file) #me conecto a la base de datos
         cursor = conn.cursor() #me paro en el ulitmo valor
@@ -31,35 +29,66 @@ def write_meas_to_db(database_file :str,
         
         tiempo_actual = time.time()
         
-        max_t_meass = 10#5*60 # tiempo entre mediciones
+        max_t_meass = 0.9 #10*60 # tiempo entre mediciones
         
         last_t1,last_v1,last_t2,last_v2 = get_last_two_meas_from_db(database_file, topic)
-        print("")
-        print("")
-        print(f"last_t1: {last_t1}, last_v1: {last_v1}, last_t2: {last_t2}, last_v2: {last_v2}")
-        print(f"medicion: {medicion}, tiempo_actual: {tiempo_actual}")
-        print("")
+#        print("")
+#        print("")
+#        print(f"last_t1: {last_t1}, last_v1: {last_v1}, last_t2: {last_t2}, last_v2: {last_v2}")
+#        print(f"medicion: {medicion}, tiempo_actual: {tiempo_actual}")
+#        print("")
         
-        if (last_v1 == 0 and last_v2 == 0 and medicion == 0):
-            print("Son 0")
-            if tiempo_actual - last_t1 >= max_t_meass: # cinco min
-                print("paso el tiempo mat_t")
-                cursor.execute(
-                    f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
-                    (tiempo_actual, medicion),
+        if (last_v1 == 0 and last_v2 == 0):
+            if medicion==0:
+                if tiempo_actual - last_t1 >= max_t_meass: # cinco min
+                    print("paso el tiempo mat_t")
+                    cursor.execute(
+                        f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
+                        (tiempo_actual, medicion),
                                 )
-                conn.commit()
-            else: #son 0 pero paso menos de x tiempo
-                pass
-        else:
-            print("no es 0")
+                    #conn.commit()....
+                else: #no paso el x tiempo
+                    pass
+
+            else: #tenemos nueva medicion
+                """escribir un 0 adicional"""
+                cursor.execute( #forzamos un 0 el segundo anterior
+                        f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
+                        (tiempo_actual-1, 0),
+                                ) 
+                print("no es 0")
+                cursor.execute( #escribimos valor actual
+                        f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
+                        (tiempo_actual, medicion),
+                                ) 
+        else: #si las dos mediciones anteriores no son cero, sigo escribiendo normal
             cursor.execute(
-                    f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
-                    (tiempo_actual, medicion),
-                            )
-            conn.commit()
-        print("")
-        print("")
+                        f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
+                        (tiempo_actual, medicion),
+                                ) 
+        conn.commit()
+
+#        if (last_v1 == 0 and last_v2 == 0 and medicion == 0):
+#            print("Son 0")
+#            if tiempo_actual - last_t1 >= max_t_meass: # cinco min
+#                print("paso el tiempo mat_t")
+#                cursor.execute(
+#                    f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
+#                    (tiempo_actual, medicion),
+#                                )
+#                conn.commit()
+#            else: #son 0 pero paso menos de x tiempo
+#                pass
+#        else:
+#            print("no es 0")
+#            cursor.execute(
+#                    f"INSERT INTO {table_name} (tiempo, valor) VALUES (?, ?)",
+#                    (tiempo_actual, medicion),
+#                            )
+#            conn.commit()
+#        print("")
+#        print("")
+
         cursor.close()
         conn.close()
     except Exception as e:
@@ -109,7 +138,7 @@ def get_last_two_meas_from_db(database_file:str, topic:str):
             return tiempo, valor, tiempo, valor 
         else:
             print(f"No se encontraron datos para el tema '{topic}'")
-            return None, None
+            return None, None, None, None
         cursor.close()
         conn.close()
     except Exception as e:
@@ -254,3 +283,4 @@ def obtener_datos_desde_tabla(database_file: str,
         # ~ df = pd.DataFrame({'tiempo':[], 'valor':[]})
     # ~ conn.close()
     # ~ return df.to_dict()
+
