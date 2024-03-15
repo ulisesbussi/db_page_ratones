@@ -23,6 +23,15 @@ register_page(__name__, path="/running",name = "Experimento actual")
 
 import page_utils
 
+
+
+
+# Lista de 10 colores diferentes
+colores = ['#1f77b4', '#ff7f0e', '#2ca02c', 
+           '#d62728', '#9467bd', '#8c564b', 
+           '#e377c2', '#7f7f7f', '#bcbd22', 
+           '#17becf']
+
 #last_exp_data= page_utils.read_exp_file()
 
 #------------------------Funciones de figuras------------------------------
@@ -35,7 +44,7 @@ def trace_from_df(df_dict : dict, i : int):
     # ~ df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
 
     if len(df):
-        #df["dist"] = df["valor"].cumsum()
+        #df["dist"] = df["velocidad"].cumsum()
         df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
     else:
         df["distancia"] = []
@@ -47,6 +56,7 @@ def trace_from_df(df_dict : dict, i : int):
         "type": "scatter",
         "mode": "lines",
         "name": f"Sensor {i}",
+        "line": {"color": colores[i]},
     }
     return trace
 
@@ -67,31 +77,35 @@ def trace_from_df_v(df_dict : dict, i : int):
         "type": "scatter",
         "mode": "lines",
         "name": f"Sensor {i}",
+        "line": {"color": colores[i]},
     }
     return trace
 
 def create_fig():
-    fig = go.Figure(data=[{"x": [], "y": []} for i in range(3)])
+    #fig = go.Figure(data=[{"x": [], "y": []} for i in range(3)])
+    fig = go.Figure(data= [{"x": [], "y": [] }] )
     fig["layout"] = {"title" : "Datos de Sensores",
         "xaxis_title" : "Tiempo", 
         "yaxis_title" : "Distancia"
     }
-    fig.update_layout(autosize=False,width=800,height=320,
+    fig.update_layout(autosize=False,width=800,height=330,
     margin=dict(l=10,r=20,b=30,t=40))
     return fig
 
 def create_fig_v():
     
-    custom_colors = ['#1f77b4' , '#ff7f0e', '#2ca02c', '#d62728' , '#9467bd' ,
-                    '#8c564b' , '#e377c2' , '#7f7f7f' , '#bcbd22' , '#17becf']
+    # custom_colors = ['#1f77b4' , '#ff7f0e', '#2ca02c', '#d62728' , '#9467bd' ,
+    #                 '#8c564b' , '#e377c2' , '#7f7f7f' , '#bcbd22' , '#17becf']
                     
-    fig = go.Figure(data=[{"x": [], "y": [] , "line" : {"color" : custom_colors[i %
-    len(custom_colors)]}} for i in range(3)])
+    # fig = go.Figure(data=[{"x": [], "y": [] , 
+    # "line" : {"color" : custom_colors[i %
+    # len(custom_colors)]}} for i in range(3)])
+    fig = go.Figure(data=[{"x": [], "y": [] }] )
     fig["layout"] = {"title" : "Datos de Sensores",
         "xaxis_title" : "Tiempo", 
         "yaxis_title" : "Velocidad"
     }
-    fig.update_layout(autosize=False,width=800,height=320,
+    fig.update_layout(autosize=False,width=800,height=330,
     margin=dict(l=10,r=20,b=30,t=40))
     return fig
 intervalo_actualiazcion = 50 * 1000  # 50 segundos en milisegundos
@@ -173,9 +187,8 @@ def actualizar_grafico():
     for i in range(10):
         table_name =    f"datos_{i}"
         data = dbu.obtener_datos_desde_tabla(last_exp_data.get("db_name"),
-                                              table_name,
-                                              step = 1)
-        print(f"data {data}")
+                                              table_name)
+        #print(f"data {data}")
         this_trace = trace_from_df(data,i)
     
         #si la tabla no está vacía agrego los datos    
@@ -194,9 +207,8 @@ def actualizar_grafico_v():
     for i in range(10):
         table_name =    f"datos_{i}"
         data = dbu.obtener_datos_desde_tabla(last_exp_data.get("db_name"),
-                                              table_name,
-                                              step = 1)
-        print(f"data {data}")
+                                              table_name)
+        #print(f"data {data}")
         this_trace = trace_from_df_v(data,i)
     
         #si la tabla no está vacía agrego los datos    
