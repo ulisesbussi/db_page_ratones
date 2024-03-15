@@ -35,15 +35,15 @@ def trace_from_df(df_dict : dict, i : int):
     # ~ df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
 
     if len(df):
-        df["dist"] = df["valor"].cumsum()
+        #df["dist"] = df["valor"].cumsum()
         df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
     else:
-        df["dist"] = []
+        df["distancia"] = []
     
     #df['tiempo'] = df['tiempo'].to_timestamp()
     trace = {
         "x": df["tiempo"],
-        "y": df["dist"], #df["valor"],
+        "y": df["distancia"], #df["valor"],
         "type": "scatter",
         "mode": "lines",
         "name": f"Sensor {i}",
@@ -59,11 +59,11 @@ def trace_from_df_v(df_dict : dict, i : int):
     #df["dist"] = df["valor"].cumsum()
         df['tiempo'] = df['tiempo']- df['tiempo'].iloc[0]  #ver si despues se pasa a minutos o que
     else:
-        df["valor"] = []
+        df["velocidad"] = []
     # ~ #df['tiempo'] = df['tiempo'].to_timestamp()
     trace = {
         "x": df["tiempo"],
-        "y": df["valor"],
+        "y": df["velocidad"],
         "type": "scatter",
         "mode": "lines",
         "name": f"Sensor {i}",
