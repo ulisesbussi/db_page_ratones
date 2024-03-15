@@ -243,12 +243,14 @@ def obtener_datos_desde_tabla(database_file: str,
         t0,tf,n_dias = obtener_dias_guardados(database_file, table_name)
         if dia>n_dias:
             dia=n_dias -1  #creo que le tengo que restar 1
-        
-        t_init = t0 + 86400*dia # segundos en un dia 86400
-        t_fin  =  t0 + 86400*(dia+1)
-    
-        query = f"SELECT * FROM {table_name} WHERE tiempo BETWEEN {t_init} AND {t_fin}"
-        df = pd.read_sql_query(query, conn)
+        elif dia >= 0:
+            t_init = t0 + 86400*dia # segundos en un dia 86400
+            t_fin  =  t0 + 86400*(dia+1)
+            query = f"SELECT * FROM {table_name} WHERE tiempo BETWEEN {t_init} AND {t_fin}"
+            df = pd.read_sql_query(query, conn)
+        else:
+            query = f"SELECT * FROM {table_name}"
+            df = pd.read_sql_query(query, conn)
         
         # cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
         # largo_tabla = cursor.fetchone()[0]
@@ -256,7 +258,7 @@ def obtener_datos_desde_tabla(database_file: str,
         # query = f"SELECT * FROM {table_name} WHERE (ROWID-1) % {step} = 0"
         # df = pd.read_sql_query(query, conn)
     except:
-        df = pd.DataFrame({'tiempo':[], 'valor':[]})
+        df = pd.DataFrame({'tiempo':[], 'velocidad':[], 'distancia':[]})
     conn.close()
     return df.to_dict()
 
