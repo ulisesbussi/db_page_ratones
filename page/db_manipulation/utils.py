@@ -24,7 +24,8 @@ def _create_datatable_if_not_exists(conn,table_name):
         conn (_type_): conexion a la base de datos
         table_name (_type_): nombre de la tabla
     """
-    
+
+    idx = table_name.split('_')[-1]
     resp = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tablas = [t[0] for t in resp.fetchall()]
 
@@ -34,7 +35,9 @@ def _create_datatable_if_not_exists(conn,table_name):
         conn.execute(f"CREATE TABLE IF NOT EXISTS {table_name} "+\
                 "(tiempo REAL PRIMARY KEY, velocidad REAL, distancia REAL)")
         
-        create_index_command = f"CREATE INDEX idx_tiempo ON {table_name} (tiempo);"
+        #create_index_command = f"CREATE INDEX idx_tiempo ON {table_name} (tiempo);"
+        #aca cada tabla tiene que tener su indice con diferente valor
+        create_index_command = f"CREATE INDEX idx_tiempo_{idx} ON {table_name} (tiempo);"
         conn.execute(create_index_command)
 
     return conn
