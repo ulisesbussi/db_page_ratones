@@ -34,7 +34,6 @@ def _create_datatable_if_not_exists(conn,table_name):
     else:
         conn.execute(f"CREATE TABLE IF NOT EXISTS {table_name} "+\
                 "(tiempo REAL PRIMARY KEY, velocidad REAL, distancia REAL)")
-        
         #create_index_command = f"CREATE INDEX idx_tiempo ON {table_name} (tiempo);"
         #aca cada tabla tiene que tener su indice con diferente valor
         create_index_command = f"CREATE INDEX idx_tiempo_{idx} ON {table_name} (tiempo);"
@@ -52,17 +51,13 @@ def _get_last_two_meas_from_db(conn, table_name):
         rows = cursor.fetchall()
         
         if len(rows) == 2:
-            d1 = rows[0]
-            d2= rows[1]
-            
-            return d1, d2
+            d1,d2 = rows[:2]
         elif len(rows) == 1:
-            d1 = rows[0]
-            d2 = d1
-            return d1, d2
+            d1 = d2 = rows[0]
         else:
             print(f"No se encontraron datos para la {table_name=}")
             return None, None
+        return d1, d2
     except Exception as e:
         print("Error al leer los dato:", e)
         
@@ -80,10 +75,7 @@ def write_meas_to_db(database_file :str,
         cursor = conn.cursor() #me paro en el ulitmo valor
     
         table_name = topic.replace("/", "_").replace("sensor_", "")
-        # cursor.execute(
-        #             f"CREATE TABLE IF NOT EXISTS {table_name} " +\
-        #             "(tiempo REAL, valor REAL)"
-        #         )
+       
         conn = _create_datatable_if_not_exists(conn,table_name)
         #aca cree una función para crear la tabla, ahora tiene una col distancia
         #además de un índice que va a optimizar la velocidad de las consultas.
@@ -107,8 +99,6 @@ def write_meas_to_db(database_file :str,
     #        print(f"last_t1: {last_t1}, last_v1: {last_v1}, last_t2: {last_t2}, last_v2: {last_v2}")
     #        print(f"medicion: {medicion}, tiempo_actual: {tiempo_actual}")
     #        print("")
-        
-
             
             if (v1 == v2 == 0):
                 if medicion==0:
@@ -121,23 +111,22 @@ def write_meas_to_db(database_file :str,
                         #conn.commit()....
                     else: #no paso el x tiempo
                         pass
-
                 else: #tenemos nueva medicion
                     """escribir un 0 adicional"""
                     cursor.execute( #forzamos un 0 el segundo anterior
                             query_insert_into,
                             (tiempo_actual-1, 0, di2),
-                                    ) 
+                          ) 
                     print("no es 0")
                     cursor.execute( #escribimos valor actual
-                            query_insert_into,
-                            (tiempo_actual, medicion, new_dist),
-                                    ) 
+                                query_insert_into,
+                                (tiempo_actual, medicion, new_dist),
+                           ) 
             else: #si las dos mediciones anteriores no son cero, sigo escribiendo normal
                 cursor.execute(
                             query_insert_into,
                             (tiempo_actual, medicion, new_dist),
-                                    ) 
+                       ) 
         conn.commit()
 
 #        if (last_v1 == 0 and last_v2 == 0 and medicion == 0):
@@ -180,7 +169,6 @@ def guardar_estado_programa(database_file  : str,
         "CREATE TABLE IF NOT EXISTS estado_programa "+\
         "(tiempo_deseado REAL, tiempo_actual REAL)"
     )
-
     # Insertar información sobre el estado actual
     cursor.execute("DELETE FROM estado_programa")  # Solo guardamos el último estado
     cursor.execute("INSERT INTO estado_programa "+\
@@ -209,7 +197,6 @@ def obtener_dias_guardados(database_file: str,
                            table_name: str):
     
     conn = sqlite3.connect(database_file)
-    
     cursor = conn.cursor()
     try: 
         
@@ -240,26 +227,25 @@ def obtener_datos_desde_tabla(database_file: str,
         table_name (str): _description_
         dia : el dia del cual quiero los datos
     """
-    conn = sqlite3.connect(database_file)
+   conn = sqlite3.connect(database_file)
     try:
-        #cursor = conn.cursor()
-        t0,tf,n_dias = obtener_dias_guardados(database_file, table_name)
-        if dia>n_dias:
-            dia=n_dias -1  #creo que le tengo que restar 1
-        elif dia >= 0:
-            t_init = t0 + 86400*dia # segundos en un dia 86400
-            t_fin  =  t0 + 86400*(dia+1)
-            query = f"SELECT * FROM {table_name} WHERE tiempo BETWEEN {t_init} AND {t_fin}"
-            df = pd.read_sql_query(query, conn)
-        else:
+        if dia ==-1: #toma todos los datos
             query = f"SELECT * FROM {table_name}"
             df = pd.read_sql_query(query, conn)
+        else:
+            t0,tf,n_dias = obtener_dias_guardados(database_file, table_name)
+            if dia>=0:                
+                if dia>=n_dias:
+                    print("seleccionando dia mayor que el ultimo")
+                    dia=n_dias -1  #creo que le tengo que restar 1
+            else:
+                ValueError('Se seleccionó un día negativo no se puede calcular')
+                
+            t_init = t0 + 86400*dia # segundos en un dia 86400
+            t_fin  = t0 + 86400*(dia+1)
+            query = f"SELECT * FROM {table_name} WHERE tiempo BETWEEN {t_init} AND {t_fin}"
+            df = pd.read_sql_query(query, conn)
         
-        # cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
-        # largo_tabla = cursor.fetchone()[0]
-    
-        # query = f"SELECT * FROM {table_name} WHERE (ROWID-1) % {step} = 0"
-        # df = pd.read_sql_query(query, conn)
     except:
         df = pd.DataFrame({'tiempo':[], 'velocidad':[], 'distancia':[]})
     conn.close()
