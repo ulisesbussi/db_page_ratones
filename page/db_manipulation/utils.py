@@ -227,7 +227,7 @@ def obtener_datos_desde_tabla(database_file: str,
         table_name (str): _description_
         dia : el dia del cual quiero los datos
     """
-   conn = sqlite3.connect(database_file)
+    conn = sqlite3.connect(database_file)
     try:
         if dia ==-1: #toma todos los datos
             query = f"SELECT * FROM {table_name}"
